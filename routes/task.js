@@ -36,11 +36,11 @@ router.get('/query', async (req, res) => {
 		}
 	} catch (error) {
 		logger.warn(`An error occurred while fetching tasks: ${error.message}`);
-		res.status(500).json(makeStandardResponse(false, { message: error.message || "Failed to fetch tasks." }));
+		res.json(makeStandardResponse(false, { message: error.message || "Failed to fetch tasks." }));
 	}
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req, res, next) => {
 	try {
 		const taskId = req.params.id;
 		const [rows] = await db.query('SELECT * FROM tasks WHERE id = ?', [taskId]);
@@ -53,7 +53,7 @@ router.get('/:id', async (req, res) => {
 		res.render('task.njk', {title: "任务详情", task});
 	} catch (error) {
 		logger.warn(`An error occurred while fetching task details: ${error.message}`);
-		res.status(500).json(makeStandardResponse(false, {message: error.message || ""}));
+		next(error);
 	}
 });
 

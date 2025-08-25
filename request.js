@@ -117,6 +117,7 @@ function getResponseUser(response) {
 
 export async function sendContentRequest(url, headers, type = 0) {
 	try {
+		const startTime = Date.now();
 		let response = await axios.get(url + "?_contentOnly=1", headers);
 		if (type) response = await c3vk(response, url, headers);
 		const obj = getResponseObject(response, type);
@@ -136,6 +137,8 @@ export async function sendContentRequest(url, headers, type = 0) {
 		} catch (ignore) {
 			logger.warn(`Failed to upsert user when requesting ${url}`);
 		}
+		const endTime = Date.now();
+		logger.debug(`Content fetched from ${url.split('?')[0]} in ${endTime - startTime}ms`);
 		return makeStandardResponse(true, obj);
 	}
 	catch(error) {

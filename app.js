@@ -10,6 +10,7 @@ import logger from './logger.js';
 import articleRouter from './routes/article.js';
 import pasteRouter from './routes/paste.js';
 import taskRouter from './routes/task.js';
+import tokenRouter from './routes/token.js';
 import {processQueue, requestPointTick} from "./request.js";
 import db from "./db.js";
 nunjucks.configure("views", { autoescape: true, express: app, watch: true });
@@ -49,10 +50,11 @@ app.get('/deletion', (req, res) => {
 app.use('/article', articleRouter);
 app.use('/paste', pasteRouter);
 app.use('/task', taskRouter);
+app.use('/token', tokenRouter);
 
 app.use((err, req, res, next) => {
 	logger.error(err.message);
-	res.status(500).render('error.njk', { title: "错误", error_message: err.message });
+	res.render('error.njk', { title: "错误", error_message: err.message });
 });
 
 requestPointTick();

@@ -1,6 +1,7 @@
 import markdownit from "markdown-it";
 import markdownItAttrs from "markdown-it-attrs";
 import markdownItContainer from "markdown-it-container";
+import logger from "./logger.js";
 
 export function createMarkdownRenderer() {
 	const md = markdownit({
@@ -62,6 +63,8 @@ export function createMarkdownRenderer() {
 	});
 	
 	function renderMarkdown(src) {
+		const startTime = Date.now();
+		const size = Buffer.byteLength(src, 'utf8');
 		const pattern = /^(:{2,})([\w|-]+)(\s*\[.*?\])?(\s*\{.*?\})?$/;
 		function preprocessLine(line) {
 			const match = line.match(pattern);
@@ -81,7 +84,10 @@ export function createMarkdownRenderer() {
 				.split('</table>').join('</table></div>');
 		}
 		const processed = src.split(/\r?\n/).map(preprocessLine).join("\n");
-		return replaceUI(md.render(processed));
+		const result = replaceUI(md.render(processed));
+		const endTime = Date.now();
+		logger.debug(`Markdown rendered in ${endTime - startTime}ms. Size: ${size} bytes.`);
+		return result;
 	}
 	
 	return { renderMarkdown };

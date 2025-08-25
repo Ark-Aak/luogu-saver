@@ -58,7 +58,7 @@ router.get('/save/:id', async (req, res) => {
 		const id = await pushQueue({ url, headers, aid: s, type: 1 });
 		res.send(makeStandardResponse(true, { message: "Request queued.", result: id })).end();
 	} catch (error) {
-		res.status(500).send(makeStandardResponse(false, { message: error.message })).end();
+		res.send(makeStandardResponse(false, { message: error.message })).end();
 	}
 });
 

@@ -1,0 +1,90 @@
+{% extends "layout.njk" %}
+
+{% block content %}
+    <div class="ui grid">
+        <div class="sixteen wide column">
+            <div class="card shadow">
+                <h1 class="ui center aligned header">
+                    <span><i class="ui search icon colored"></i>Token 申请</span>
+                    <div class="sub header" style="margin-top: 10px;">申请在洛谷保存站的唯一识别凭据</div>
+                </h1>
+            </div>
+        </div>
+    </div>
+    <div class="ui grid">
+        <div class="sixteen wide column">
+            <div class="card shadow outline">
+                <h3 class="ui dividing header">
+                    <i class="info icon"></i>
+                    申请须知
+                </h3>
+                <ul>
+                    <li>需要提供有效的剪贴板 ID 作为身份验证，剪贴板内容应为 <code>lgs_register_verification</code>。</li>
+                    <li>申请的凭据只会显示一次，请注意保存，重复申请将刷新凭据。</li>
+                    <li>本凭据将作为您在洛谷保存站识别身份的唯一凭据。</li>
+                </ul>
+            </div>
+            <div class="card shadow outline">
+                <div class="ui form">
+                    <div class="field">
+                        <label>洛谷 UID</label>
+                        <input class="ui icon fluid input" type="text" id="uid" placeholder="请输入你的洛谷 UID">
+                    </div>
+                    <div class="field">
+                        <label>剪贴板 ID</label>
+                        <input class="ui icon fluid input" type="text" id="paste-id" placeholder="请输入你的剪贴板 ID">
+                    </div>
+                    <button id="generate-btn" class="ui primary button">
+                        <i class="key icon"></i> 生成 Token
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+		$('#generate-btn').on('click', function () {
+			const uid = $('#uid').val().trim();
+			const pasteId = $('#paste-id').val().trim();
+
+			if (!uid || !pasteId) {
+				Swal.fire({
+					icon: 'error',
+					title: '输入不完整',
+					text: '请填写所有字段',
+				});
+				return;
+			}
+
+			$.ajax({
+				url: '/token/generate',
+				method: 'POST',
+				contentType: 'application/json',
+				data: JSON.stringify({ uid: uid, pasteId: pasteId }),
+				success: function (data) {
+					if (data.success) {
+					    Swal.fire({
+                            icon: 'success',
+                            title: '申请成功',
+                            html: `<p>你的 Token 是：</p><pre style="word-break: break-all; background: #f4f4f4; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">${data.data.token}</pre><p>请妥善保存！</p>`,
+                            confirmButtonText: '好的喵！'
+                        });
+					} else {
+						Swal.fire({
+							icon: 'error',
+							title: '申请失败',
+							text: data.data.message || '未知错误'
+						});
+					}
+				},
+				error: function () {
+					Swal.fire({
+						icon: 'error',
+						title: '网络错误',
+						text: '请稍后再试。'
+					});
+				}
+			});
+		});
+    </script>
+{% endblock %}
