@@ -1,5 +1,5 @@
 # 作用：当有新的广告位申请时，自动指派给 quanac-lcx
-name: Auto Assign
+name: Auto Assign Advertising Applications
 
 on:
   issues:
@@ -7,9 +7,6 @@ on:
 
 permissions:
   issues: write
-  pull-requests: write
-  repository-projects: write
-  contents: read  
 
 jobs:
   assign-issue:
@@ -17,30 +14,36 @@ jobs:
     steps:
       - name: Assign issue to quanac-lcx
         if: contains(github.event.issue.labels.*.name, 'advertising application')
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7 
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.ASSIGNMENT_TOKEN }}
           script: |
-            const issue = context.issue;
+            const { owner, repo, number: issue_number } = context.issue;
             const assignee = 'quanac-lcx';
             
             try {
-              const currentAssignees = context.issue.assignees.map(a => a.login);
+              const { data: issue } = await github.rest.issues.get({
+                owner,
+                repo,
+                issue_number
+              });
+              
+              const currentAssignees = issue.assignees.map(a => a.login);
               
               if (currentAssignees.includes(assignee)) {
-                console.log(`Issue #${issue.number} is already assigned to ${assignee}`);
+                console.log(`Issue #${issue_number} 已指派给 ${assignee}`);
                 return;
               }
               
               await github.rest.issues.addAssignees({
-                owner: issue.owner,
-                repo: issue.repo,
-                issue_number: issue.number,
+                owner,
+                repo,
+                issue_number,
                 assignees: [assignee]
               });
               
-              console.log(`Successfully assigned issue #${issue.number} to ${assignee}`);
+              console.log(`成功将 Issue #${issue_number} 指派给 ${assignee}`);
             } catch (error) {
-              console.error(`Failed to assign issue:`, error);
+              console.error(`ERR:`, error.response?.data || error.message);
               throw error;
             }
